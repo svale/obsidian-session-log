@@ -20,14 +20,26 @@ git clone git@github.com:svale/obsidian-session-log.git ~/tools/agent-skills/obs
 ln -s ~/tools/agent-skills/obsidian-session-log ~/.claude/skills/obsidian-session-log
 ```
 
-Then point the script at your own vault by editing `VAULT_PATH` and `JOURNAL_DIR` at the top of `scripts/append_log.sh`, and update the vault table in `SKILL.md` to match. The defaults assume an iCloud-synced vault with daily notes in a `0_ Journal` subfolder.
+## Configure
 
-To skip permission prompts, add this to `~/.claude/settings.json`:
+The vault path lives in the environment, not in the script. Add it to `~/.claude/settings.json` along with the `allowedTools` pattern that skips permission prompts:
 
 ```json
 {
+  "env": {
+    "OBSIDIAN_VAULT_PATH": "/absolute/path/to/your/Vault",
+    "OBSIDIAN_JOURNAL_DIR": "Journal"
+  },
   "allowedTools": [
     "Bash(echo * | bash *obsidian-session-log/scripts/append_log.sh)"
   ]
 }
 ```
+
+| Variable | Required | Default | Meaning |
+|---|---|---|---|
+| `OBSIDIAN_VAULT_PATH` | yes | — | Absolute path to the vault |
+| `OBSIDIAN_JOURNAL_DIR` | no | `Journal` | Daily-notes folder, relative to the vault root |
+| `OBSIDIAN_SESSION_LOG_CONFIG` | no | `~/.config/obsidian-session-log/config` | Optional config file, sourced when present |
+
+Setting them in your shell profile works too, as does writing the two assignments into the config file if you also want to run the script outside Claude Code.

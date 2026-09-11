@@ -7,7 +7,7 @@
 #   bash append_log.sh  # reads from stdin if no argument
 #
 # The script:
-#   1. Resolves today's daily note path in the vault's "0_ Journal" folder
+#   1. Resolves today's daily note path from $OBSIDIAN_VAULT_PATH / $OBSIDIAN_JOURNAL_DIR
 #   2. Creates the note file if it doesn't exist
 #   3. Appends a "## Claude Sessions" heading if not already present
 #   4. Detects repo name and injects `#project/repo-name` tag after the heading line
@@ -15,8 +15,26 @@
 
 set -euo pipefail
 
-VAULT_PATH=~/Library/Mobile\ Documents/com~apple~CloudDocs/Obsidian/Work
-JOURNAL_DIR="0_ Journal"   # daily notes live here, NOT in the vault root
+# Configuration comes from the environment, so no personal vault path lives in
+# this file. Set these in ~/.claude/settings.json ("env" block), in your shell
+# profile, or in the optional config file sourced below.
+CONFIG_FILE="${OBSIDIAN_SESSION_LOG_CONFIG:-$HOME/.config/obsidian-session-log/config}"
+if [ -f "$CONFIG_FILE" ]; then
+  # shellcheck disable=SC1090
+  . "$CONFIG_FILE"
+fi
+
+VAULT_PATH="${OBSIDIAN_VAULT_PATH:-}"
+JOURNAL_DIR="${OBSIDIAN_JOURNAL_DIR:-Journal}"   # daily notes live here, relative to the vault root
+
+if [ -z "$VAULT_PATH" ]; then
+  echo "❌ OBSIDIAN_VAULT_PATH is not set." >&2
+  echo "   Point it at your Obsidian vault, e.g. in ~/.claude/settings.json:" >&2
+  echo '     "env": { "OBSIDIAN_VAULT_PATH": "/path/to/Vault", "OBSIDIAN_JOURNAL_DIR": "Journal" }' >&2
+  echo "   or write those two lines into $CONFIG_FILE as shell assignments." >&2
+  exit 1
+fi
+
 DATE=$(date +%Y-%m-%d)
 NOTE_PATH="${VAULT_PATH}/${JOURNAL_DIR}/${DATE}.md"
 
@@ -29,7 +47,7 @@ NOTE_PATH="${NOTE_PATH/#\~/$HOME}"
 JOURNAL_PATH=$(dirname "$NOTE_PATH")
 if [ ! -d "$JOURNAL_PATH" ]; then
   echo "❌ Journal folder not found: $JOURNAL_PATH" >&2
-  echo "   Check the vault path / JOURNAL_DIR, or that iCloud has synced the folder." >&2
+  echo "   Check OBSIDIAN_VAULT_PATH / OBSIDIAN_JOURNAL_DIR, or that the vault has synced." >&2
   exit 1
 fi
 

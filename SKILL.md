@@ -9,16 +9,25 @@ Appends a concise, structured log entry to the user's Obsidian daily note at ses
 
 ## Vault Configuration
 
+The vault location is **not** hardcoded. `append_log.sh` reads it from the environment:
+
+| Variable | Required | Default | Meaning |
+|---|---|---|---|
+| `OBSIDIAN_VAULT_PATH` | yes | — | Absolute path to the Obsidian vault |
+| `OBSIDIAN_JOURNAL_DIR` | no | `Journal` | Daily-notes folder, relative to the vault root |
+| `OBSIDIAN_SESSION_LOG_CONFIG` | no | `~/.config/obsidian-session-log/config` | Optional config file, sourced when it exists |
+
+Set the two main variables in the `env` block of `~/.claude/settings.json`, in your shell
+profile, or as shell assignments in the config file above.
+
 | Setting | Value |
 |---|---|
-| Vault path | `~/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/Work` |
-| Daily notes folder | `0_ Journal/` (note the space after `0_`) — **not** the vault root |
 | Daily note format | `YYYY-MM-DD.md` (e.g. `2026-03-17.md`) |
 | Log heading | `## Claude Sessions` |
 
-Daily notes live in the `0_ Journal` subfolder. The script builds its path from
-`JOURNAL_DIR` and aborts if that folder is missing, rather than creating a stray note
-elsewhere in the vault.
+Daily notes live in the journal subfolder, not the vault root. The script aborts if
+`OBSIDIAN_VAULT_PATH` is unset, and again if the journal folder is missing, rather than
+creating a stray note somewhere unexpected.
 
 ## When to Run
 
